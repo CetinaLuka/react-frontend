@@ -1,11 +1,18 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import fetchTags from './api/api.js';
 
 function ListItem(props) {
     return (
-        <li>
-            {props.value.naslov}
+        <li className="" style={{width: 200 + 'px'}}>
+            <div className="float-left">
+                {props.value.naslov}
+            </div>
+            <div className="float-right">
+                <Button onClick={() => props.buttonOnClick(props.value.id)} label='delete' />
+            </div>
         </li>
     );
 }
@@ -28,12 +35,13 @@ class TextInput extends React.Component {
 class List extends React.Component {
     render() {
         return (
-            <div>
-                <ul>
+            <div class="card">
+                <ul class="list-group list-group-flush">
                     {
                         this.props.tags.map(tag => (
                             <ListItem
                                 value={tag}
+                                buttonOnClick={(id) => this.props.buttonOnClick(id)}
                             />
                         ))
                     }
@@ -51,21 +59,11 @@ class Site extends React.Component {
             tagInput: '',
         }
     }
-    componentDidMount() {
-        fetch("http://localhost:1337/tags")
-            .then(res => res.json())
-            .then(
-                (result) => {
-                    this.setState({
-                        tags: result
-                    });
-                },
-                (error) => {
-                    this.setState({
-                        error
-                    });
-                }
-            )
+    async componentDidMount() {
+        /*await fetchTags().then((data) => this.setState({
+            tags: data,
+        }));*/
+        await fetchTags().then((data) => console.log(data));
     }
     onValueChange(key, event) {
         this.setState({
@@ -88,6 +86,18 @@ class Site extends React.Component {
                 })
             });
     }
+    deleteTag(id) {
+        const requestOptions = {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' }
+        };
+        fetch('http://localhost:1337/tags/'+id, requestOptions)
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                this.componentDidMount();
+            });
+    }
     render() {
         return (
             <div>
@@ -95,6 +105,7 @@ class Site extends React.Component {
                 <Button onClick={() => this.addTag()} label='Add tag' />
                 <List
                     tags={this.state.tags}
+                    buttonOnClick={(id) => this.deleteTag(id)}
                 />
             </div>
         );
