@@ -4,23 +4,55 @@ import './index.css';
 import './assets/vendor/nucleo/css/nucleo.css';
 import './assets/vendor/font-awesome/css/font-awesome.min.css';
 import './assets/css/argon-design-system-react.css';
-import { getTags, deleteTag, addTag, editTag } from './api/api.js';
+import { getTags, deleteTag, addTag, editTag, getEntitys } from './api/api.js';
 
-function ListItem(props) {
+function Tag(props) {
     return (
-        <li className="shadow card" >
+        <li className="custom-shadow card mb-2 border-0" >
             <div className="card-body p-3 row">
                 <div className="col-8">
-                    {props.value.naslov}
+                    <h4>
+                        {props.value.naslov}
+                    </h4>
+                    <p className="mb-0">
+                        {props.value.opis}
+                    </p>
                 </div>
                 <div className="col-4">
-                    <div className="">
-                        <div className="float-right">
-                            <SmallButton className="float-left" onClick={() => props.buttonOnClick(props.value.id)} label='delete' />
+                    <div className="row">
+                        <div className="col-6">
+                            <Button type='danger' size='small' onClick={() => props.buttonOnClick(props.value.id)} label='delete' />
                         </div>
-                        <div className="mr-1">
-                            <SmallButton className="float-right" onClick={() => props.buttonOnClickEdit(props.value.id)} label='edit' />
+                        <div className="col-6">
+                            <Button size='small' onClick={() => props.buttonOnClickEdit(props.value.id)} label='edit' />
                         </div>
+                    </div>
+                </div>
+            </div>
+        </li>
+    );
+}
+function Entity(props) {
+    return (
+        <li className="custom-shadow card mb-2 border-0" >
+            <div className="card-body p-3">
+                <div className='row'>
+                    <div className='col-8'>
+                        <h4>
+                            {props.value.naziv}
+                        </h4>
+                    </div>
+                    <div className='col-4'>
+                        <div className='float-right'>
+                            <span class="text-uppercase badge badge-primary badge-pill">{props.value.tip}</span>
+                        </div>
+                    </div>
+                </div>
+                <div className='row'>
+                    <div className="col">
+                        <p className="pb-0">
+                            {props.value.opis}
+                        </p>
                     </div>
                 </div>
             </div>
@@ -29,17 +61,17 @@ function ListItem(props) {
 }
 class Button extends React.Component {
     render() {
+        let size = '';
+        if (this.props.size === 'small')
+            size = 'btn-sm';
+        else if (this.props.size === 'large')
+            size = 'btn-lg';
+
+        let type = 'btn-primary';
+        if (this.props.type === 'danger')
+            type = 'btn-danger';
         return (
-            <button className="btn btn-primary" onClick={this.props.onClick}>
-                {this.props.label}
-            </button>
-        );
-    }
-}
-class SmallButton extends React.Component {
-    render() {
-        return (
-            <button className="btn btn-primary btn-sm" onClick={this.props.onClick}>
+            <button className={'btn ' + type + ' ' + size} onClick={this.props.onClick}>
                 {this.props.label}
             </button>
         );
@@ -52,16 +84,36 @@ class TextInput extends React.Component {
         );
     }
 }
-class List extends React.Component {
+class TagList extends React.Component {
     render() {
         return (
-            <div className="card">
+            <div className="">
                 <ul className="list-group list-group-flush">
                     {
                         this.props.tags.map(tag => (
-                            <ListItem
+                            <Tag
                                 key={tag.id}
                                 value={tag}
+                                buttonOnClick={(id) => this.props.buttonOnClick(id)}
+                                buttonOnClickEdit={(id) => this.props.buttonOnClickEdit(id)}
+                            />
+                        ))
+                    }
+                </ul>
+            </div>
+        );
+    }
+}
+class EntityList extends React.Component {
+    render() {
+        return (
+            <div className="">
+                <ul className="list-group list-group-flush">
+                    {
+                        this.props.entitys.map(entity => (
+                            <Entity
+                                key={entity.id}
+                                value={entity}
                                 buttonOnClick={(id) => this.props.buttonOnClick(id)}
                                 buttonOnClickEdit={(id) => this.props.buttonOnClickEdit(id)}
                             />
@@ -102,18 +154,28 @@ class Site extends React.Component {
         super(props);
         this.state = {
             tags: [],
-            tagInput: '',
+            entitys: [],
+            tagTitle: '',
+            tagDescription: '',
             loadingTags: true,
         }
     }
     componentDidMount() {
-        const response = getTags()
-        response.then((resp) => {
+        const tagResponse = getTags()
+        tagResponse.then((resp) => {
             const tags = resp.data;
             console.log(tags);
             this.setState({
                 tags: tags,
                 loadingTags: false,
+            });
+        });
+        const entityResponse = getEntitys()
+        entityResponse.then((resp) => {
+            const entitys = resp.data;
+            console.log(entitys);
+            this.setState({
+                entitys: entitys,
             });
         });
     }
@@ -124,12 +186,13 @@ class Site extends React.Component {
     }
     addTag() {
         const allTags = this.state.tags.slice()
-        const response = addTag(this.state.tagInput, 'tag narejen z react preko axios')
+        const response = addTag(this.state.tagTitle, this.state.tagDescription)
         response.then((resp) => {
             const newTag = resp.data;
             this.setState({
                 tags: allTags.concat([newTag]),
-                tagInput: '',
+                tagTitle: '',
+                tagDescription: '',
             })
         })
     }
@@ -147,7 +210,7 @@ class Site extends React.Component {
     editTag(id) {
         let allTags = this.state.tags.slice()
         let newTags = [];
-        const response = editTag(id, this.state.tagInput, 'tag narejen z react preko axios')
+        const response = editTag(id, this.state.tagTitle, this.state.tagDescription)
         response.then((resp) => {
             const editedTag = resp.data;
             allTags.forEach((tag) => {
@@ -161,7 +224,8 @@ class Site extends React.Component {
             console.log(newTags);
             this.setState({
                 tags: newTags,
-                tagInput: '',
+                tagTitle: '',
+                tagDescription: '',
             })
         })
     }
@@ -171,33 +235,39 @@ class Site extends React.Component {
             headerText = 'Available tags'
         }
         return (
-            <body>
-                <div className="container">
-                    <div className="row">
-                        <div className="col-sm-12 col-md-8 col-lg-6">
-                            <h2 className="mb-2">Tags</h2>
-                            <div className="row">
-                                <div className="col-8">
-                                    <TextInput placeholder="Tag title" value={this.state.tagInput} onValueChange={this.onValueChange.bind(this, 'tagInput')} />
-                                </div>
-                                <div className="col-4">
-                                    <Button onClick={() => this.addTag()} label='Add tag' />
+            <div className="container pt-4">
+                <div className="row">
+                    <div className="col-sm-12 col-md-8 col-lg-6">
+                        <h2 className="mb-2">Tags</h2>
+                        <div className="row">
+                            <div className="col-8">
+                                <TextInput placeholder="Tag title" value={this.state.tagTitle} onValueChange={this.onValueChange.bind(this, 'tagTitle')} />
+                                <div className="mt-2">
+                                    <TextInput placeholder="Tag description" value={this.state.tagDescription} onValueChange={this.onValueChange.bind(this, 'tagDescription')} />
                                 </div>
                             </div>
-                            <div>
-                                <h3 className="mb-1">{headerText}</h3>
-                            </div>
-                            <div>
-                                <List
-                                    tags={this.state.tags}
-                                    buttonOnClick={(id) => this.deleteTag(id)}
-                                    buttonOnClickEdit={(id) => this.editTag(id)}
-                                />
+                            <div className="col-4">
+                                <Button onClick={() => this.addTag()} label='Add tag' />
                             </div>
                         </div>
+                        <div>
+                            <h3 className="mb-1">{headerText}</h3>
+                        </div>
+                        <div>
+                            <TagList
+                                tags={this.state.tags}
+                                buttonOnClick={(id) => this.deleteTag(id)}
+                                buttonOnClickEdit={(id) => this.editTag(id)}
+                            />
+                        </div>
+                    </div>
+                    <div className="col-sm-12 col-md-8 col-lg-6">
+                        <EntityList
+                            entitys={this.state.entitys}/>
                     </div>
                 </div>
-            </body>
+            </div>
+
         );
     }
 }

@@ -1,6 +1,7 @@
 import axios from './axios';
 import endpoints from './endpoints.js';
 
+//tags
 async function getTags() {
     try {
         const response = await axios.get(endpoints.tag)
@@ -46,5 +47,15 @@ async function deleteTag(tagId) {
         console.log(err);
     }
 }
+//entity
+async function getEntitys() {
+    try {
+        const response = await axios.get(endpoints.entiteteta)
+        return response;
+    }
+    catch(err){
+        console.log(err);
+    }
+}
 
-export {getTags, addTag, editTag, deleteTag};
+export {getTags, addTag, editTag, deleteTag, getEntitys};
