@@ -2,11 +2,11 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import fetchTags from './api/api.js';
+import { getTags, deleteTag, addTag} from './api/api.js';
 
 function ListItem(props) {
     return (
-        <li className="" style={{width: 200 + 'px'}}>
+        <li className="" style={{ width: 200 + 'px' }}>
             <div className="float-left">
                 {props.value.naslov}
             </div>
@@ -40,6 +40,7 @@ class List extends React.Component {
                     {
                         this.props.tags.map(tag => (
                             <ListItem
+                                key={tag.id}
                                 value={tag}
                                 buttonOnClick={(id) => this.props.buttonOnClick(id)}
                             />
@@ -61,8 +62,8 @@ class Site extends React.Component {
         }
     }
     componentDidMount() {
-        const tagsResponse = fetchTags()
-        tagsResponse.then((resp) => {
+        const response = getTags()
+        response.then((resp) => {
             const tags = resp.data;
             console.log(tags);
             this.setState({
@@ -77,36 +78,30 @@ class Site extends React.Component {
         })
     }
     addTag() {
-        const tags = this.state.tags.slice();
-        const nextTag = this.state.tagInput;//'tag' + (tags.length + 1);
-        const requestOptions = {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ naslov: this.state.tagInput, opis: 'tag narejen z react' })
-        };
-        fetch('http://localhost:1337/tags', requestOptions)
-            .then(response => response.json())
-            .then(data => {
-                this.setState({
-                    tags: tags.concat([data]),
-                })
-            });
+        const allTags = this.state.tags.slice()
+        const response = addTag(this.state.tagInput, 'tag narejen z react preko axios')
+        response.then((resp) => {
+            const newTag = resp.data;
+            this.setState({
+                tags: allTags.concat([newTag]),
+                tagInput: '',
+            })
+        })
     }
     deleteTag(id) {
-        const requestOptions = {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' }
-        };
-        fetch('http://localhost:1337/tags/'+id, requestOptions)
-            .then(response => response.json())
-            .then(data => {
-                console.log(data);
-                this.componentDidMount();
-            });
+        const response = deleteTag(id)
+        response.then((resp) => {
+            console.log(resp);
+            const allTags = this.state.tags.slice();
+            const newTags = allTags.filter(tag => tag.id !== id);
+            this.setState({
+                tags: newTags,
+            })
+        });
     }
     render() {
         let headerText = 'Loading tags';
-        if(!this.state.loadingTags){
+        if (!this.state.loadingTags) {
             headerText = 'Available tags'
         }
         return (
