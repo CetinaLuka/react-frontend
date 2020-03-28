@@ -55,6 +55,15 @@ function Entity(props) {
                         </p>
                     </div>
                 </div>
+                <div className='row'>
+                    <div className='col'>
+                    {
+                        props.value.tags.map(tag => (
+                            <span class="text-uppercase badge badge-info badge-pill ml-1 mr-1">{tag.naslov}</span>
+                        ))
+                    }
+                    </div>
+                </div>
             </div>
         </li>
     );
