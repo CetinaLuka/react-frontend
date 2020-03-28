@@ -35,8 +35,8 @@ class TextInput extends React.Component {
 class List extends React.Component {
     render() {
         return (
-            <div class="card">
-                <ul class="list-group list-group-flush">
+            <div className="card">
+                <ul className="list-group list-group-flush">
                     {
                         this.props.tags.map(tag => (
                             <ListItem
@@ -57,13 +57,19 @@ class Site extends React.Component {
         this.state = {
             tags: [],
             tagInput: '',
+            loadingTags: true,
         }
     }
-    async componentDidMount() {
-        /*await fetchTags().then((data) => this.setState({
-            tags: data,
-        }));*/
-        await fetchTags().then((data) => console.log(data));
+    componentDidMount() {
+        const tagsResponse = fetchTags()
+        tagsResponse.then((resp) => {
+            const tags = resp.data;
+            console.log(tags);
+            this.setState({
+                tags: tags,
+                loadingTags: false,
+            });
+        });
     }
     onValueChange(key, event) {
         this.setState({
@@ -99,10 +105,15 @@ class Site extends React.Component {
             });
     }
     render() {
+        let headerText = 'Loading tags';
+        if(!this.state.loadingTags){
+            headerText = 'Available tags'
+        }
         return (
             <div>
                 <TextInput value={this.state.tagInput} onValueChange={this.onValueChange.bind(this, 'tagInput')} />
                 <Button onClick={() => this.addTag()} label='Add tag' />
+                <h3>{headerText}</h3>
                 <List
                     tags={this.state.tags}
                     buttonOnClick={(id) => this.deleteTag(id)}

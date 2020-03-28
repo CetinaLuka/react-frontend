@@ -2,14 +2,11 @@ import axios from './axios';
 import endpoints from './endpoints.js';
 
 export default async function fetchTags() {
-    await axios
-        .get(endpoints.tag, {})
-        .then(res => {
-            const data = res.data;
-            console.log(data);
-            return data;
-        })
-        .catch((error) => {
-            console.log(error)
-        })
+    try {
+        const response = await axios.get(endpoints.tag, {})
+        return response;
+    }
+    catch(err){
+        console.log(err);
+    }
 }
