@@ -1,20 +1,28 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import { getTags, deleteTag, addTag, editTag} from './api/api.js';
+import './assets/vendor/nucleo/css/nucleo.css';
+import './assets/vendor/font-awesome/css/font-awesome.min.css';
+import './assets/css/argon-design-system-react.css';
+import { getTags, deleteTag, addTag, editTag } from './api/api.js';
 
 function ListItem(props) {
     return (
-        <li className="" style={{ width: 300 + 'px' }}>
-            <div className="float-left">
-                {props.value.naslov}
-            </div>
-            <div className="float-right">
-                <Button onClick={() => props.buttonOnClick(props.value.id)} label='delete' />
-            </div>
-            <div className="float-right">
-                <Button onClick={() => props.buttonOnClickEdit(props.value.id)} label='edit' />
+        <li className="shadow card" >
+            <div className="card-body p-3 row">
+                <div className="col-8">
+                    {props.value.naslov}
+                </div>
+                <div className="col-4">
+                    <div className="">
+                        <div className="float-right">
+                            <SmallButton className="float-left" onClick={() => props.buttonOnClick(props.value.id)} label='delete' />
+                        </div>
+                        <div className="mr-1">
+                            <SmallButton className="float-right" onClick={() => props.buttonOnClickEdit(props.value.id)} label='edit' />
+                        </div>
+                    </div>
+                </div>
             </div>
         </li>
     );
@@ -22,7 +30,16 @@ function ListItem(props) {
 class Button extends React.Component {
     render() {
         return (
-            <button onClick={this.props.onClick}>
+            <button className="btn btn-primary" onClick={this.props.onClick}>
+                {this.props.label}
+            </button>
+        );
+    }
+}
+class SmallButton extends React.Component {
+    render() {
+        return (
+            <button className="btn btn-primary btn-sm" onClick={this.props.onClick}>
                 {this.props.label}
             </button>
         );
@@ -31,7 +48,7 @@ class Button extends React.Component {
 class TextInput extends React.Component {
     render() {
         return (
-            <input type='text' value={this.props.value} onChange={this.props.onValueChange} />
+            <input className="form-control-alternative form-control" type='text' placeholder={this.props.placeholder} value={this.props.value} onChange={this.props.onValueChange} />
         );
     }
 }
@@ -55,7 +72,31 @@ class List extends React.Component {
         );
     }
 }
-
+class NavBar extends React.Component {
+    render() {
+        return (
+            <nav className="navbar-dark bg-primary mt-4 navbar navbar-expand-lg">
+                <div className="container">
+                    <a href="" className="navbar-brand">Elegit</a>
+                    <button className="navbar-toggler" id="navbar-primary">
+                        <span className="navbar-toggler-icon"></span>
+                    </button>
+                    <div toggler="#navbar-primary" className="collapse navbar-collapse">
+                        <div className="navbar-collapse-header">
+                            <div className="row">
+                                <div className="collapse-brand col-6">
+                                    <a href="">
+                                        text
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        );
+    }
+}
 class Site extends React.Component {
     constructor(props) {
         super(props);
@@ -103,17 +144,17 @@ class Site extends React.Component {
             })
         });
     }
-    editTag(id){
+    editTag(id) {
         let allTags = this.state.tags.slice()
         let newTags = [];
         const response = editTag(id, this.state.tagInput, 'tag narejen z react preko axios')
         response.then((resp) => {
             const editedTag = resp.data;
             allTags.forEach((tag) => {
-                if(tag.id === id){
+                if (tag.id === id) {
                     newTags.push(editedTag);
                 }
-                else{
+                else {
                     newTags.push(tag);
                 }
             })
@@ -130,16 +171,33 @@ class Site extends React.Component {
             headerText = 'Available tags'
         }
         return (
-            <div>
-                <TextInput value={this.state.tagInput} onValueChange={this.onValueChange.bind(this, 'tagInput')} />
-                <Button onClick={() => this.addTag()} label='Add tag' />
-                <h3>{headerText}</h3>
-                <List
-                    tags={this.state.tags}
-                    buttonOnClick={(id) => this.deleteTag(id)}
-                    buttonOnClickEdit={(id) => this.editTag(id)}
-                />
-            </div>
+            <body>
+                <div className="container">
+                    <div className="row">
+                        <div className="col-sm-12 col-md-8 col-lg-6">
+                            <h2 className="mb-2">Tags</h2>
+                            <div className="row">
+                                <div className="col-8">
+                                    <TextInput placeholder="Tag title" value={this.state.tagInput} onValueChange={this.onValueChange.bind(this, 'tagInput')} />
+                                </div>
+                                <div className="col-4">
+                                    <Button onClick={() => this.addTag()} label='Add tag' />
+                                </div>
+                            </div>
+                            <div>
+                                <h3 className="mb-1">{headerText}</h3>
+                            </div>
+                            <div>
+                                <List
+                                    tags={this.state.tags}
+                                    buttonOnClick={(id) => this.deleteTag(id)}
+                                    buttonOnClickEdit={(id) => this.editTag(id)}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </body>
         );
     }
 }
