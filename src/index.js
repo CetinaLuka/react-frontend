@@ -2,16 +2,19 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { getTags, deleteTag, addTag} from './api/api.js';
+import { getTags, deleteTag, addTag, editTag} from './api/api.js';
 
 function ListItem(props) {
     return (
-        <li className="" style={{ width: 200 + 'px' }}>
+        <li className="" style={{ width: 300 + 'px' }}>
             <div className="float-left">
                 {props.value.naslov}
             </div>
             <div className="float-right">
                 <Button onClick={() => props.buttonOnClick(props.value.id)} label='delete' />
+            </div>
+            <div className="float-right">
+                <Button onClick={() => props.buttonOnClickEdit(props.value.id)} label='edit' />
             </div>
         </li>
     );
@@ -43,6 +46,7 @@ class List extends React.Component {
                                 key={tag.id}
                                 value={tag}
                                 buttonOnClick={(id) => this.props.buttonOnClick(id)}
+                                buttonOnClickEdit={(id) => this.props.buttonOnClickEdit(id)}
                             />
                         ))
                     }
@@ -99,6 +103,27 @@ class Site extends React.Component {
             })
         });
     }
+    editTag(id){
+        let allTags = this.state.tags.slice()
+        let newTags = [];
+        const response = editTag(id, this.state.tagInput, 'tag narejen z react preko axios')
+        response.then((resp) => {
+            const editedTag = resp.data;
+            allTags.forEach((tag) => {
+                if(tag.id === id){
+                    newTags.push(editedTag);
+                }
+                else{
+                    newTags.push(tag);
+                }
+            })
+            console.log(newTags);
+            this.setState({
+                tags: newTags,
+                tagInput: '',
+            })
+        })
+    }
     render() {
         let headerText = 'Loading tags';
         if (!this.state.loadingTags) {
@@ -112,6 +137,7 @@ class Site extends React.Component {
                 <List
                     tags={this.state.tags}
                     buttonOnClick={(id) => this.deleteTag(id)}
+                    buttonOnClickEdit={(id) => this.editTag(id)}
                 />
             </div>
         );

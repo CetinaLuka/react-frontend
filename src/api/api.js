@@ -24,6 +24,19 @@ async function addTag(naslov, opis) {
     }
 }
 
+async function editTag(id, naslov, opis) {
+    try {
+        const response = await axios.put(endpoints.tag + id, {
+            naslov: naslov,
+            opis: opis
+        })
+        return response;
+    }
+    catch(err){
+        console.log(err);
+    }
+}
+
 async function deleteTag(tagId) {
     try {
         const response = await axios.delete(endpoints.tag + tagId, {})
@@ -34,4 +47,4 @@ async function deleteTag(tagId) {
     }
 }
 
-export {getTags, deleteTag, addTag};
+export {getTags, addTag, editTag, deleteTag};
